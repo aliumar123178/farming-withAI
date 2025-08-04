@@ -1,7 +1,10 @@
 import json
-import google.generativeai as genai
-from config import GEMINI_API_KEY
+import streamlit as st
 from json import JSONDecodeError
+import google.generativeai as genai
+
+# Load Gemini API Key securely from Streamlit secrets
+GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
 
 # Configure Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
@@ -26,7 +29,7 @@ def get_storage_report(crop_name):
     Provide metric units for all measurements.
     List at least 3 items for array fields.
     """
-    
+
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(structured_prompt)
@@ -36,18 +39,18 @@ def get_storage_report(crop_name):
         response_text = response_text.replace('```json', '').replace('```', '').strip()
         
         report_data = json.loads(response_text)
-        
+
         # Ensure all required fields are present
         required_fields = ['temperature', 'humidity', 'ventilation', 'container',
-                          'duration', 'preservation_tips', 'pests',
-                          'disease_prevention', 'warning_signs']
-        
+                           'duration', 'preservation_tips', 'pests',
+                           'disease_prevention', 'warning_signs']
+
         for field in required_fields:
             if field not in report_data:
                 raise ValueError(f"Missing required field: {field}")
-                
-        return report_data
         
+        return report_data
+
     except JSONDecodeError as e:
         raise ValueError(f"Failed to parse JSON response: {str(e)}")
     except Exception as e:
